@@ -8,8 +8,9 @@ pipeline {
     }
 
     environment {
-        APP_PORT = '8085'
-        APP_IP = '192.168.1.51'
+        APP_PORT = '9090'
+        CONTAINER_NAME = 'simple_web_maven_container'
+        IMAGE_NAME = 'simple_web_maven'
     }
 
     stages {
@@ -26,28 +27,20 @@ pipeline {
                 bat 'mvn clean install'
             }
         }
-
-        stage('Build with Maven') {
-            steps {
-                bat 'mvn clean package -DskipTests'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t simple_web_maven .'
+                bat 'docker build -t ${IMAGE_NAME} .'
             }
         }
 
-        stage('Run JAR') {
-            steps {
-                // Windows doesn't have 'pkill' or 'nohup' — you need Windows commands or a workaround
-                // Here is a simple example to kill the process by name (adjust if needed)
-                bat '''
-                taskkill /F /IM java.exe || echo No Java process found
-                start /B java -jar target\\simple_web_maven-0.0.1-SNAPSHOT.jar --server.port=%APP_PORT% --server.address=%APP_IP% > app.log 2>&1
-                '''
-            }
-        }
+         stage('Run Docker Container') {
+                    steps {
+                        bat """
+                        docker stop ${CONTAINER_NAME} || echo Container not running
+                        docker rm ${CONTAINER_NAME} || echo Container not found
+                        docker run -d --name ${CONTAINER_NAME} -p ${APP_PORT}:${APP_PORT} ${IMAGE_NAME}
+                        """
+                    }
+         }
     }
 }
