@@ -6,6 +6,11 @@ pipeline {
         jdk 'jdk17'
     }
 
+    environment {
+        APP_PORT = '8085'         // set your desired port here
+        APP_IP = '0.0.0.0'        // set your desired IP here (e.g., 0.0.0.0 for all interfaces)
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -27,11 +32,10 @@ pipeline {
 
         stage('Run JAR') {
             steps {
-                // Stop running app if any and run jar in background
-                sh '''
+                sh """
                 pkill -f "java -jar simple_web_maven-0.0.1-SNAPSHOT.jar" || true
-                nohup java -jar target/simple_web_maven-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
-                '''
+                nohup java -jar target/simple_web_maven-0.0.1-SNAPSHOT.jar --server.port=${APP_PORT} --server.address=${APP_IP} > app.log 2>&1 &
+                """
             }
         }
     }
