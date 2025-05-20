@@ -6,14 +6,7 @@ pipeline {
         maven 'maven-399'  // Make sure this matches your Maven tool name
         jdk 'jdk17'        // Make sure this matches your JDK tool name
     }
-
-    environment {
-        APP_PORT = '9090'
-        CONTAINER_NAME = 'simple_web_maven_container'
-        IMAGE_NAME = 'simple_web_maven'
-    }
-
-    stages {
+      stages {
         stage('Checkout') {
             steps {
                 // Replace with your Git repo URL and branch
@@ -29,16 +22,16 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t ${IMAGE_NAME} .'
+                bat 'docker build -t simple_web_maven .'
             }
         }
 
          stage('Run Docker Container') {
                     steps {
                         bat """
-                        docker stop ${CONTAINER_NAME} || echo Container not running
-                        docker rm ${CONTAINER_NAME} || echo Container not found
-                        docker run -d --name ${CONTAINER_NAME} -p ${APP_PORT}:${APP_PORT} ${IMAGE_NAME}
+                        docker stop simple_web_maven_container || echo Container not running
+                        docker rm simple_web_maven_container || echo Container not found
+                        docker run -d --name simple_web_maven_container -p 9090:9090 simple_web_maven
                         """
                     }
          }
