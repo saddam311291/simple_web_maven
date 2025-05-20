@@ -18,6 +18,11 @@ pipeline {
                 checkout scm
             }
         }
+         stage('Build with Maven') {
+                    steps {
+                        sh 'mvn clean install'
+                    }
+         }
 
         stage('Build with Maven') {
             steps {
