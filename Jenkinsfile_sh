@@ -2,25 +2,22 @@ pipeline {
     agent any
 
     tools {
-        git 'DefaultGit'
-        maven 'maven-399'
-        jdk 'jdk17'
-    }
-
-    environment {
-        APP_PORT = '8085'         // set your desired port here
-        APP_IP = '0.0.0.0'        // set your desired IP here (e.g., 0.0.0.0 for all interfaces)
+        git 'DefaultGit'   // Ensure this matches your Jenkins Git tool name
+        maven 'maven-399'  // Ensure this matches your Maven tool name
+        jdk 'jdk17'        // Ensure this matches your JDK tool name
     }
 
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                // Replace with your Git repo URL and branch
+                git url: 'https://github.com/saddam311291/simple_web_maven.git', branch: 'main'
             }
         }
-        stage('Build with Maven') {
+
+        stage('Clean and Install') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                sh 'mvn clean install'
             }
         }
 
@@ -30,11 +27,12 @@ pipeline {
             }
         }
 
-        stage('Run JAR') {
+        stage('Run Docker Container') {
             steps {
                 sh """
-                pkill -f "java -jar simple_web_maven-0.0.1-SNAPSHOT.jar" || true
-                nohup java -jar target/simple_web_maven-0.0.1-SNAPSHOT.jar --server.port=${APP_PORT} --server.address=${APP_IP} > app.log 2>&1 &
+                docker stop simple_web_maven_container || echo "Container not running"
+                docker rm simple_web_maven_container || echo "Container not found"
+                docker run -d --name simple_web_maven_container -p 9090:9090 simple_web_maven
                 """
             }
         }
